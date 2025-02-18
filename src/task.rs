@@ -4,6 +4,8 @@ use std::collections::HashSet;
 
 #[derive(Debug, serde::Deserialize, Clone)]
 pub struct Task {
+    pub id: usize,
+
     pub uuid: String,
 
     pub description: String,
@@ -11,6 +13,8 @@ pub struct Task {
     pub urgency: f64,
 
     pub status: Status,
+
+    pub project: Option<String>,
 
     #[serde(deserialize_with = "crate::dates::tw_datetime")]
     pub entry: DateTime<Utc>,
