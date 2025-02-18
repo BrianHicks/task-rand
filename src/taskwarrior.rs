@@ -1,15 +1,16 @@
 use crate::{config::Config, task::Task};
 use anyhow::{Context, Result};
 use std::collections::HashMap;
+use std::path::PathBuf;
 use tokio::process::Command;
 
 #[derive(Debug)]
 pub struct Taskwarrior {
-    binary: String,
+    binary: PathBuf,
 }
 
 impl Taskwarrior {
-    pub fn new(binary: String) -> Self {
+    pub fn new(binary: PathBuf) -> Self {
         Self { binary }
     }
 
@@ -42,7 +43,7 @@ impl Taskwarrior {
 }
 
 pub struct ExportBuilder {
-    binary: String,
+    binary: PathBuf,
     filters: Vec<String>,
     urgency_coefficients: HashMap<String, f64>,
 }
