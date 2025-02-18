@@ -9,7 +9,7 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Style, Stylize},
     text::{Line, Span},
-    widgets::Paragraph,
+    widgets::{Gauge, Paragraph},
     Frame,
 };
 
@@ -50,19 +50,20 @@ impl App {
             } => {
                 let time_remaining = *length - (Utc::now() - started);
 
-                let mm_ss = format!(
-                    "{}:{:02}",
-                    time_remaining.num_minutes(),
-                    time_remaining.num_seconds() % 60
-                );
-
                 let percent_remaining =
                     time_remaining.num_seconds() as f64 / length.num_seconds() as f64;
 
-                frame.render_widget(
-                    Paragraph::new(format!("{task:#?}\n{mm_ss}\n{percent_remaining}")),
-                    app_area,
-                )
+                let gauge = Gauge::default()
+                    .label(format!(
+                        "{}: {}:{:02}",
+                        task.description,
+                        time_remaining.num_minutes(),
+                        time_remaining.num_seconds() % 60
+                    ))
+                    .ratio(percent_remaining)
+                    .use_unicode(true);
+
+                frame.render_widget(gauge, app_area)
             }
             Activity::Break { .. } => frame.render_widget("taking a break", app_area),
         }
