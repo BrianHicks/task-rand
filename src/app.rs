@@ -2,10 +2,16 @@ use crate::config::Config;
 use crate::task::Task;
 use crate::taskwarrior::Taskwarrior;
 use anyhow::{Context, Result};
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Duration, Local, Utc};
 use crossterm::event::{Event, KeyCode};
 use rand::prelude::*;
-use ratatui::Frame;
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Style, Stylize},
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
+};
 
 #[derive(Debug)]
 pub struct App {
@@ -30,7 +36,35 @@ impl App {
     }
 
     pub fn render(&self, frame: &mut Frame) {
-        frame.render_widget("Hello, World!", frame.area());
+        let [app_area, status_line_area] =
+            Layout::vertical([Constraint::Fill(1), Constraint::Length(1)]).areas(frame.area());
+
+        match &self.doing {
+            Activity::Nothing => {
+                frame.render_widget("Nothing to do right now.", app_area);
+            }
+            Activity::Task { task, .. } => {
+                frame.render_widget(Paragraph::new(format!("{task:#?}")), app_area)
+            }
+            Activity::Break { .. } => frame.render_widget("taking a break", app_area),
+        }
+
+        frame.render_widget(
+            Line::from(vec![
+                Span::styled("<q>", Style::default().bold()),
+                Span::from(" quit "),
+                Span::styled("<c>", Style::default().bold()),
+                Span::from(" complete task "),
+                Span::styled("<r>", Style::default().bold()),
+                Span::from(" roll new task "),
+                Span::styled("<e>", Style::default().bold()),
+                Span::from(" extend time"),
+            ])
+            .alignment(Alignment::Center)
+            .white()
+            .on_blue(),
+            status_line_area,
+        );
     }
 
     pub async fn handle_input(&mut self, event: Event) -> Result<()> {
@@ -159,11 +193,11 @@ impl Activity {
         let extension = Duration::minutes(5 * rand::random_range(1..=5));
 
         match self {
-            Self::Task { until, .. } => {
-                *until += extension;
+            Self::Task { length, .. } => {
+                *length += extension;
             }
-            Self::Break { until } => {
-                *until += extension;
+            Self::Break { length, .. } => {
+                *length += extension;
             }
             Self::Nothing => {}
         }
