@@ -1,20 +1,21 @@
-use std::path::PathBuf;
-
+mod app;
 mod config;
 mod dates;
 mod task;
 mod taskwarrior;
 
+use crate::app::App;
 use anyhow::{Context, Result};
 use clap::Parser;
+use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
-struct App {
+struct Cli {
     #[clap(long, default_value = "task")]
     task_bin: PathBuf,
 }
 
-impl App {
+impl Cli {
     async fn run(&self) -> Result<()> {
         let tw = taskwarrior::Taskwarrior::new(self.task_bin.clone());
 
@@ -23,19 +24,9 @@ impl App {
             .await
             .context("could not get taskwarrior config")?;
 
-        let tasks = tw
-            .export()
-            .with_urgency_coefficient("due", 0.0)
-            .with_urgency_coefficient("age", 0.0)
-            .with_urgency_coefficient("blocked", 0.0)
-            .with_urgency_coefficient("blocking", 0.0)
-            .with_filter("jirastatus.not:backlog")
-            .call()
-            .await
-            .context("could not export tasks")?;
+        let mut app = App::new(tw, config);
 
-        println!("{:#?}", config);
-        println!("{:#?}", tasks);
+        app.refresh_tasks().await?;
 
         Ok(())
     }
@@ -43,7 +34,7 @@ impl App {
 
 #[tokio::main]
 async fn main() {
-    let app = App::parse();
+    let app = Cli::parse();
 
     if let Err(err) = app.run().await {
         eprintln!("{:#}", err);
