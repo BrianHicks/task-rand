@@ -6,8 +6,10 @@ mod taskwarrior;
 
 use crate::app::App;
 use anyhow::{Context, Result};
+use chrono::Utc;
 use clap::Parser;
 use crossterm::event::{self, Event};
+use futures::StreamExt;
 use ratatui::DefaultTerminal;
 use std::path::PathBuf;
 
@@ -35,11 +37,32 @@ impl Cli {
         result
     }
 
-    async fn run_ui(&self, app: App, mut terminal: DefaultTerminal) -> Result<()> {
+    async fn run_ui(&self, mut app: App, mut terminal: DefaultTerminal) -> Result<()> {
+        let mut events = crossterm::event::EventStream::new();
+        let mut ticks = tokio::time::interval(tokio::time::Duration::from_secs(1));
+
+        app.handle_tick(Utc::now())
+            .await
+            .context("could not handle initial tick")?;
+
         loop {
             terminal.draw(|frame| app.render(frame))?;
 
-            if matches!(event::read()?, Event::Key(_)) {
+            tokio::select! {
+                Some(Ok(event)) = events.next() => {
+                    app.handle_input(event)
+                        .await
+                        .context("could not handle event")?;
+                }
+
+                _ = ticks.tick() => {
+                    app.handle_tick(Utc::now())
+                        .await
+                        .context("could not handle tick")?;
+                }
+            }
+
+            if app.should_quit() {
                 break Ok(());
             }
         }

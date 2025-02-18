@@ -2,7 +2,7 @@ use crate::config::Config;
 use chrono::{DateTime, Duration, Utc};
 use std::collections::HashSet;
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, Clone)]
 pub struct Task {
     pub uuid: String,
 

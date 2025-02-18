@@ -40,6 +40,21 @@ impl Taskwarrior {
 
         Config::parse(&config_text).context("could not parse config")
     }
+
+    #[tracing::instrument]
+    pub async fn mark_done(&self, id: &str) -> Result<()> {
+        let mut command = Command::new(&self.binary);
+        command.args(&[id, "done"]);
+
+        tracing::trace!(?command, "marking task as done");
+
+        command
+            .status()
+            .await
+            .context("could not mark task as done")?;
+
+        Ok(())
+    }
 }
 
 pub struct ExportBuilder {
