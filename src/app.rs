@@ -94,12 +94,12 @@ impl App {
         // as our sentinel value instead.
         let minutes = rand::random_range(0..=5);
 
-        if minutes == 0 {
+        if minutes == 0 && !self.doing.is_break() {
             Ok(Activity::Break {
                 until: now + Duration::minutes(10),
             })
         } else {
-            let target_duration = Duration::minutes(minutes * 10);
+            let target_duration = Duration::minutes(minutes.min(1) * 10);
 
             let tasks = self.available_tasks().await?;
 
@@ -133,6 +133,10 @@ pub enum Activity {
 impl Activity {
     pub fn is_nothing(&self) -> bool {
         matches!(self, Self::Nothing)
+    }
+
+    pub fn is_break(&self) -> bool {
+        matches!(self, Self::Break { .. })
     }
 
     pub async fn mark_done(&self, tw: &Taskwarrior) -> Result<()> {
