@@ -96,7 +96,8 @@ impl App {
 
         if minutes == 0 && !self.doing.is_break() {
             Ok(Activity::Break {
-                until: now + Duration::minutes(10),
+                started: now,
+                length: Duration::minutes(10),
             })
         } else {
             let target_duration = Duration::minutes(minutes.min(1) * 10);
@@ -109,11 +110,11 @@ impl App {
 
             Ok(Activity::Task {
                 task: task.clone(),
-                until: now
-                    + task
-                        .estimate
-                        .unwrap_or(target_duration)
-                        .min(target_duration),
+                started: now,
+                length: task
+                    .estimate
+                    .unwrap_or(target_duration)
+                    .min(target_duration),
             })
         }
     }
@@ -126,8 +127,15 @@ impl App {
 #[derive(Debug)]
 pub enum Activity {
     Nothing,
-    Task { task: Task, until: DateTime<Utc> },
-    Break { until: DateTime<Utc> },
+    Task {
+        task: Task,
+        started: DateTime<Utc>,
+        length: Duration,
+    },
+    Break {
+        started: DateTime<Utc>,
+        length: Duration,
+    },
 }
 
 impl Activity {
