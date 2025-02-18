@@ -7,6 +7,8 @@ mod taskwarrior;
 use crate::app::App;
 use anyhow::{Context, Result};
 use clap::Parser;
+use crossterm::event::{self, Event};
+use ratatui::DefaultTerminal;
 use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
@@ -24,11 +26,23 @@ impl Cli {
             .await
             .context("could not get taskwarrior config")?;
 
-        let mut app = App::new(tw, config);
+        let app = App::new(tw, config);
 
-        app.refresh_tasks().await?;
+        let terminal = ratatui::init();
+        let result = self.run_ui(app, terminal).await;
+        ratatui::restore();
 
-        Ok(())
+        result
+    }
+
+    async fn run_ui(&self, app: App, mut terminal: DefaultTerminal) -> Result<()> {
+        loop {
+            terminal.draw(|frame| app.render(frame))?;
+
+            if matches!(event::read()?, Event::Key(_)) {
+                break Ok(());
+            }
+        }
     }
 }
 

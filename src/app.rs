@@ -3,6 +3,7 @@ use crate::task::Task;
 use crate::taskwarrior::Taskwarrior;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
+use ratatui::Frame;
 
 #[derive(Debug)]
 pub struct App {
@@ -10,7 +11,6 @@ pub struct App {
     config: Config,
 
     current_task: Option<CurrentTask>,
-    all_tasks: Vec<Task>,
 }
 
 #[derive(Debug)]
@@ -26,13 +26,11 @@ impl App {
             config,
 
             current_task: None,
-            all_tasks: Vec::new(),
         }
     }
 
-    pub async fn refresh_tasks(&mut self) -> Result<()> {
-        self.all_tasks = self
-            .tw
+    async fn latest_tasks(&mut self) -> Result<Vec<Task>> {
+        self.tw
             .export()
             .with_urgency_coefficient("due", 0.0)
             .with_urgency_coefficient("age", 0.0)
@@ -41,8 +39,10 @@ impl App {
             .with_filter("jirastatus.not:backlog")
             .call()
             .await
-            .context("could not export tasks")?;
+            .context("could not export tasks")
+    }
 
-        Ok(())
+    pub fn render(&self, frame: &mut Frame) {
+        frame.render_widget("Hello, World!", frame.area());
     }
 }
