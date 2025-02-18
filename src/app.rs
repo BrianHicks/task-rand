@@ -43,8 +43,26 @@ impl App {
             Activity::Nothing => {
                 frame.render_widget("Nothing to do right now.", app_area);
             }
-            Activity::Task { task, .. } => {
-                frame.render_widget(Paragraph::new(format!("{task:#?}")), app_area)
+            Activity::Task {
+                task,
+                started,
+                length,
+            } => {
+                let time_remaining = *length - (Utc::now() - started);
+
+                let mm_ss = format!(
+                    "{}:{:02}",
+                    time_remaining.num_minutes(),
+                    time_remaining.num_seconds() % 60
+                );
+
+                let percent_remaining =
+                    time_remaining.num_seconds() as f64 / length.num_seconds() as f64;
+
+                frame.render_widget(
+                    Paragraph::new(format!("{task:#?}\n{mm_ss}\n{percent_remaining}")),
+                    app_area,
+                )
             }
             Activity::Break { .. } => frame.render_widget("taking a break", app_area),
         }
@@ -134,7 +152,7 @@ impl App {
                 length: Duration::minutes(10),
             })
         } else {
-            let target_duration = Duration::minutes(minutes.min(1) * 10);
+            let target_duration = Duration::minutes(minutes.max(1) * 10);
 
             let tasks = self.available_tasks().await?;
 
