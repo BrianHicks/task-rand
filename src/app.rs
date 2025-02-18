@@ -12,7 +12,6 @@ pub struct App {
     tw: Taskwarrior,
     config: Config,
 
-    now: DateTime<Utc>,
     doing: Activity,
 
     should_quit: bool,
@@ -24,7 +23,6 @@ impl App {
             tw,
             config,
 
-            now: Utc::now(),
             doing: Activity::Nothing,
 
             should_quit: false,
@@ -36,23 +34,36 @@ impl App {
     }
 
     pub async fn handle_input(&mut self, event: Event) -> Result<()> {
-        match event {
-            Event::Key(key_event) => match key_event.code {
+        if let Event::Key(key_event) = event {
+            match key_event.code {
                 KeyCode::Char('q') => {
                     self.should_quit = true;
-
-                    Ok(())
                 }
-                _ => Ok(()),
-            },
-            _ => Ok(()),
+                KeyCode::Char('c') => {
+                    self.doing
+                        .mark_done(&self.tw)
+                        .await
+                        .context("could not mark task done")?;
+
+                    self.doing = self.choose_next_task().await?;
+                }
+                KeyCode::Char('r') => {
+                    self.doing = self.choose_next_task().await?;
+                }
+                KeyCode::Char('e') => {
+                    self.doing.extend();
+                }
+                _ => {}
+            }
         }
+
+        Ok(())
     }
 
-    pub async fn handle_tick(&mut self, now: DateTime<Utc>) -> Result<()> {
+    pub async fn handle_tick(&mut self) -> Result<()> {
         if self.doing.is_nothing() {
             self.doing = self
-                .choose_next_task(now)
+                .choose_next_task()
                 .await
                 .context("could not set a task")?;
         }
@@ -74,7 +85,9 @@ impl App {
             .context("could not get tasks")
     }
 
-    async fn choose_next_task(&self, now: DateTime<Utc>) -> Result<Activity> {
+    async fn choose_next_task(&self) -> Result<Activity> {
+        let now = Utc::now();
+
         // This is inspired by the Gladden Design Paper Apps TO•DO, where you
         // roll a d6 to decide how long you're going to work. You take a break
         // if you roll a 6, and work for `roll*10` minutes otherwise. We use `0`
@@ -122,14 +135,25 @@ impl Activity {
         matches!(self, Self::Nothing)
     }
 
-    pub async fn mark_done(self, tw: &Taskwarrior) -> Result<Self> {
-        match self {
-            Self::Task { task, .. } => {
-                tw.mark_done(&task.uuid).await?;
+    pub async fn mark_done(&self, tw: &Taskwarrior) -> Result<()> {
+        if let Self::Task { task, .. } = self {
+            tw.mark_done(&task.uuid).await?;
+        }
 
-                Ok(Self::Nothing)
+        Ok(())
+    }
+
+    pub fn extend(&mut self) {
+        let extension = Duration::minutes(5 * rand::random_range(1..=5));
+
+        match self {
+            Self::Task { until, .. } => {
+                *until += extension;
             }
-            _ => Ok(Self::Nothing),
+            Self::Break { until } => {
+                *until += extension;
+            }
+            Self::Nothing => {}
         }
     }
 }

@@ -6,9 +6,7 @@ mod taskwarrior;
 
 use crate::app::App;
 use anyhow::{Context, Result};
-use chrono::Utc;
 use clap::Parser;
-use crossterm::event::{self, Event};
 use futures::StreamExt;
 use ratatui::DefaultTerminal;
 use std::path::PathBuf;
@@ -41,7 +39,7 @@ impl Cli {
         let mut events = crossterm::event::EventStream::new();
         let mut ticks = tokio::time::interval(tokio::time::Duration::from_secs(1));
 
-        app.handle_tick(Utc::now())
+        app.handle_tick()
             .await
             .context("could not handle initial tick")?;
 
@@ -56,7 +54,7 @@ impl Cli {
                 }
 
                 _ = ticks.tick() => {
-                    app.handle_tick(Utc::now())
+                    app.handle_tick()
                         .await
                         .context("could not handle tick")?;
                 }

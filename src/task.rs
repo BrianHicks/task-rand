@@ -35,13 +35,6 @@ pub struct Task {
 }
 
 impl Task {
-    pub fn available_at(&self, when: DateTime<Utc>) -> bool {
-        match self.wait {
-            None => true,
-            Some(wait) => wait <= when,
-        }
-    }
-
     pub fn urgency_at(&self, when: DateTime<Utc>, config: &Config) -> f64 {
         self.urgency
             + self.base_due_urgency_at(when) * config.urgency_due_coefficient
@@ -98,7 +91,7 @@ impl Task {
     }
 }
 
-#[derive(Debug, serde::Deserialize, PartialEq, Eq)]
+#[derive(Debug, serde::Deserialize, PartialEq, Eq, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum Status {
     Pending,
