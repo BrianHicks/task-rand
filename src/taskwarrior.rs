@@ -134,7 +134,7 @@ impl ModifyBuilder {
 
         tracing::trace!(?command, "calling taskwarrior for modify");
 
-        command.status().await.context("could not modify tasks")?;
+        command.output().await.context("could not modify tasks")?;
 
         Ok(())
     }
