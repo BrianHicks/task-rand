@@ -165,7 +165,9 @@ impl App {
                 Span::styled("<r>", Style::default().bold()),
                 Span::from("eroll "),
                 Span::styled("<q>", Style::default().bold()),
-                Span::from("uit"),
+                Span::from("uit "),
+                Span::styled("<w>", Style::default().bold()),
+                Span::from("ait (1h)"),
             ])
             .alignment(Alignment::Center)
             .style(gauge_style.reversed()),
@@ -200,6 +202,19 @@ impl App {
                         command.arg("edit");
 
                         self.interactive = Some(command)
+                    };
+                }
+                KeyCode::Char('w') => {
+                    if let Activity::Task { task, .. } = &self.doing {
+                        self.tw
+                            .modify()
+                            .with_subject(&task.uuid)
+                            .with_mod("wait:1h")
+                            .call()
+                            .await
+                            .with_context(|| format!("could not modify {}", task.uuid))?;
+
+                        self.doing = self.choose_next_task().await?;
                     };
                 }
                 _ => {}

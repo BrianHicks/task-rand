@@ -55,6 +55,15 @@ impl Taskwarrior {
 
         Ok(())
     }
+
+    #[tracing::instrument]
+    pub fn modify(&self) -> ModifyBuilder {
+        ModifyBuilder {
+            binary: self.binary.clone(),
+            subjects: Vec::new(),
+            mods: Vec::new(),
+        }
+    }
 }
 
 pub struct ExportBuilder {
@@ -93,5 +102,40 @@ impl ExportBuilder {
         let output = command.output().await.context("could not retrieve tasks")?;
 
         serde_json::from_slice(&output.stdout).context("could not deserialize tasks")
+    }
+}
+
+pub struct ModifyBuilder {
+    binary: PathBuf,
+    subjects: Vec<String>,
+    mods: Vec<String>,
+}
+
+impl ModifyBuilder {
+    pub fn with_subject(mut self, subject: &str) -> Self {
+        self.subjects.push(subject.to_owned());
+
+        self
+    }
+
+    pub fn with_mod(mut self, mod_: &str) -> Self {
+        self.mods.push(mod_.to_owned());
+
+        self
+    }
+
+    #[tracing::instrument("modify", skip(self))]
+    pub async fn call(self) -> Result<()> {
+        let mut command = Command::new(self.binary);
+
+        command.args(self.subjects);
+        command.arg("modify");
+        command.args(self.mods);
+
+        tracing::trace!(?command, "calling taskwarrior for modify");
+
+        command.status().await.context("could not modify tasks")?;
+
+        Ok(())
     }
 }
