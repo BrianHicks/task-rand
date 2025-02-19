@@ -195,7 +195,12 @@ impl App {
                 Span::styled("q", Style::default().bold()),
                 Span::from("uit "),
                 Span::styled("w", Style::default().bold()),
-                Span::from("ait 1h"),
+                Span::from("ait 1h "),
+                // TODO: these could be sourced from config
+                Span::styled("o", Style::default().bold()),
+                Span::from("pen "),
+                Span::styled("b", Style::default().bold()),
+                Span::from("reakdown"),
             ])
             .centered()
             .style(gauge_style.reversed()),
@@ -243,6 +248,25 @@ impl App {
                             .with_context(|| format!("could not modify {}", task.uuid))?;
 
                         self.doing = self.choose_next_task().await?;
+                    };
+                }
+
+                // TODO: source these from config
+                KeyCode::Char('o') => {
+                    if let Activity::Task { task, .. } = &self.doing {
+                        let mut command = Command::new("tw-open");
+                        command.arg(&task.uuid);
+
+                        self.interactive = Some(command)
+                    };
+                }
+                KeyCode::Char('b') => {
+                    if let Activity::Task { task, .. } = &self.doing {
+                        let mut command = Command::new("tw-breakdown");
+                        command.arg("--seq");
+                        command.arg(&task.uuid);
+
+                        self.interactive = Some(command)
                     };
                 }
                 _ => {}
