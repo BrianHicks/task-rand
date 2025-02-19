@@ -50,7 +50,7 @@ impl App {
             Layout::vertical([Constraint::Fill(1), Constraint::Length(1)]).areas(frame.area());
 
         let app_box_vert = Layout::vertical([Constraint::Length(7)]).flex(Flex::Center);
-        let app_box_horiz = Layout::horizontal([Constraint::Percentage(50)]).flex(Flex::Center);
+        let app_box_horiz = Layout::horizontal([Constraint::Percentage(75)]).flex(Flex::Center);
 
         let [app_box_area] = app_box_vert.areas(app_area);
         let [app_box_area] = app_box_horiz.areas(app_box_area);
