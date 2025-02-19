@@ -7,7 +7,7 @@ use crossterm::event::{Event, KeyCode};
 use itertools::Itertools;
 use rand::prelude::*;
 use ratatui::{
-    layout::{Alignment, Constraint, Flex, Layout},
+    layout::{Constraint, Flex, Layout},
     style::{palette::tailwind, Style, Stylize},
     text::{Line, Span, Text},
     widgets::{Gauge, Paragraph, Wrap},
@@ -197,7 +197,7 @@ impl App {
                 Span::styled("w", Style::default().bold()),
                 Span::from("ait 1h"),
             ])
-            .alignment(Alignment::Center)
+            .centered()
             .style(gauge_style.reversed()),
             status_line_area,
         );
