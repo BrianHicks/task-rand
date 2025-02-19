@@ -124,17 +124,23 @@ impl ModifyBuilder {
         self
     }
 
-    #[tracing::instrument("modify", skip(self))]
-    pub async fn call(self) -> Result<()> {
+    pub fn command(self) -> Command {
         let mut command = Command::new(self.binary);
 
         command.args(self.subjects);
         command.arg("modify");
         command.args(self.mods);
 
+        command
+    }
+
+    #[tracing::instrument("modify", skip(self))]
+    pub async fn call(self) -> Result<()> {
+        let mut command = self.command();
+
         tracing::trace!(?command, "calling taskwarrior for modify");
 
-        command.output().await.context("could not modify tasks")?;
+        command.status().await.context("could not modify tasks")?;
 
         Ok(())
     }

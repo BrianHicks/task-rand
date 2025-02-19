@@ -239,14 +239,17 @@ impl App {
                 }
                 KeyCode::Char('w') => {
                     if let Activity::Task { task, .. } = &self.doing {
-                        self.tw
-                            .modify()
-                            .with_subject(&task.uuid)
-                            .with_mod("wait:1h")
-                            .call()
-                            .await
-                            .with_context(|| format!("could not modify {}", task.uuid))?;
+                        self.interactive = Some(
+                            self.tw
+                                .modify()
+                                .with_subject(&task.uuid)
+                                .with_mod("wait:1h")
+                                .command(),
+                        );
 
+                        // TODO: possible race condition here. It's possible to
+                        // choose the same task again. Should interactive maybe
+                        // take some kind of callback so that this can't happen?
                         self.doing = self.choose_next_task().await?;
                     };
                 }
