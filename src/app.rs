@@ -148,13 +148,13 @@ impl App {
         frame.render_widget(
             Line::from(vec![
                 Span::styled("<q>", Style::default().bold()),
-                Span::from(" quit "),
-                Span::styled("<c>", Style::default().bold()),
-                Span::from(" complete task "),
+                Span::from("uit "),
+                Span::styled("<d>", Style::default().bold()),
+                Span::from("one "),
                 Span::styled("<r>", Style::default().bold()),
-                Span::from(" roll new task "),
-                Span::styled("<e>", Style::default().bold()),
-                Span::from(" extend time"),
+                Span::from("eroll "),
+                Span::styled("<m>", Style::default().bold()),
+                Span::from("ore time"),
             ])
             .alignment(Alignment::Center)
             .style(gauge_style.reversed()),
@@ -179,7 +179,7 @@ impl App {
                 KeyCode::Char('r') => {
                     self.doing = self.choose_next_task().await?;
                 }
-                KeyCode::Char('e') => {
+                KeyCode::Char('m') => {
                     self.doing.extend();
                 }
                 _ => {}
