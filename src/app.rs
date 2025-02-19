@@ -214,7 +214,7 @@ impl App {
                 KeyCode::Char('q') => {
                     self.should_quit = true;
                 }
-                KeyCode::Char('c') => {
+                KeyCode::Char('d') => {
                     self.doing
                         .mark_done(&self.tw)
                         .await
