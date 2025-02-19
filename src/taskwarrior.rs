@@ -44,7 +44,7 @@ impl Taskwarrior {
     #[tracing::instrument]
     pub async fn mark_done(&self, id: &str) -> Result<()> {
         let mut command = Command::new(&self.binary);
-        command.args(&[id, "done"]);
+        command.args([id, "done"]);
 
         tracing::trace!(?command, "marking task as done");
 

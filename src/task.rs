@@ -12,15 +12,10 @@ pub struct Task {
 
     pub urgency: f64,
 
-    pub status: Status,
-
     pub project: Option<String>,
 
     #[serde(deserialize_with = "crate::dates::tw_datetime")]
     pub entry: DateTime<Utc>,
-
-    #[serde(default, deserialize_with = "crate::dates::tw_datetime_opt")]
-    pub wait: Option<DateTime<Utc>>,
 
     #[serde(default, deserialize_with = "crate::dates::tw_datetime_opt")]
     pub due: Option<DateTime<Utc>>,
@@ -30,9 +25,6 @@ pub struct Task {
 
     #[serde(default, deserialize_with = "crate::dates::duration")]
     pub estimate: Option<Duration>,
-
-    #[serde(default)]
-    pub depends: HashSet<String>,
 
     #[serde(default)]
     pub tags: HashSet<String>,
@@ -93,13 +85,4 @@ impl Task {
             age / config.urgency_age_max
         }
     }
-}
-
-#[derive(Debug, serde::Deserialize, PartialEq, Eq, Clone)]
-#[serde(rename_all = "lowercase")]
-pub enum Status {
-    Pending,
-    Completed,
-    Deleted,
-    Recurring,
 }
