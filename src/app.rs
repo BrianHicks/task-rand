@@ -19,8 +19,10 @@ pub struct App {
     tw: Taskwarrior,
     config: Config,
 
+    /// This is the thing we're doing *right now*
     doing: Activity,
 
+    /// The main loop uses this as a signal that it should exit.
     should_quit: bool,
 }
 
