@@ -147,14 +147,14 @@ impl App {
 
         frame.render_widget(
             Line::from(vec![
-                Span::styled("<q>", Style::default().bold()),
-                Span::from("uit "),
                 Span::styled("<d>", Style::default().bold()),
                 Span::from("one "),
+                Span::styled("<m>", Style::default().bold()),
+                Span::from("ore time "),
                 Span::styled("<r>", Style::default().bold()),
                 Span::from("eroll "),
-                Span::styled("<m>", Style::default().bold()),
-                Span::from("ore time"),
+                Span::styled("<q>", Style::default().bold()),
+                Span::from("uit"),
             ])
             .alignment(Alignment::Center)
             .style(gauge_style.reversed()),
