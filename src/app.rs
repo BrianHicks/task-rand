@@ -156,18 +156,18 @@ impl App {
 
         frame.render_widget(
             Line::from(vec![
-                Span::styled("<d>", Style::default().bold()),
+                Span::styled("d", Style::default().bold()),
                 Span::from("one "),
-                Span::styled("<e>", Style::default().bold()),
+                Span::styled("e", Style::default().bold()),
                 Span::from("dit "),
-                Span::styled("<m>", Style::default().bold()),
+                Span::styled("m", Style::default().bold()),
                 Span::from("ore time "),
-                Span::styled("<r>", Style::default().bold()),
+                Span::styled("r", Style::default().bold()),
                 Span::from("eroll "),
-                Span::styled("<q>", Style::default().bold()),
+                Span::styled("q", Style::default().bold()),
                 Span::from("uit "),
-                Span::styled("<w>", Style::default().bold()),
-                Span::from("ait (1h)"),
+                Span::styled("w", Style::default().bold()),
+                Span::from("ait 1h"),
             ])
             .alignment(Alignment::Center)
             .style(gauge_style.reversed()),
