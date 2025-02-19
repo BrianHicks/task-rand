@@ -5,7 +5,7 @@ mod task;
 mod taskwarrior;
 
 use crate::app::App;
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use clap::Parser;
 use futures::StreamExt;
 use ratatui::DefaultTerminal;
@@ -62,6 +62,22 @@ impl Cli {
 
             if app.should_quit() {
                 break Ok(());
+            }
+
+            if let Some(mut command) = app.take_interactive() {
+                ratatui::restore();
+
+                let status = command.status().await.context("could not run command")?;
+
+                terminal = ratatui::init();
+
+                if !status.success() {
+                    bail!("command failed with exit code {:?}", status.code())
+                }
+
+                app.refresh_doing()
+                    .await
+                    .context("could not refresh task after interactive session")?;
             }
         }
     }

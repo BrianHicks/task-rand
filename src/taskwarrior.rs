@@ -6,7 +6,7 @@ use tokio::process::Command;
 
 #[derive(Debug)]
 pub struct Taskwarrior {
-    binary: PathBuf,
+    pub binary: PathBuf,
 }
 
 impl Taskwarrior {

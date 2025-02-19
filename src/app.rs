@@ -13,6 +13,7 @@ use ratatui::{
     widgets::{Gauge, Paragraph, Wrap},
     Frame,
 };
+use tokio::process::Command;
 
 #[derive(Debug)]
 pub struct App {
@@ -21,6 +22,12 @@ pub struct App {
 
     /// This is the thing we're doing *right now*
     doing: Activity,
+
+    /// If we need to do interactive work (e.g. editing a task) we need to get
+    /// out of the interactive terminal temporarily. We signal to the main loop
+    /// that we need to do this by setting this field to `Some(Command)`. The
+    /// main loop will run the command and then set this field back to `None`.
+    interactive: Option<Command>,
 
     /// The main loop uses this as a signal that it should exit.
     should_quit: bool,
@@ -33,7 +40,7 @@ impl App {
             config,
 
             doing: Activity::Nothing,
-
+            interactive: None,
             should_quit: false,
         }
     }
@@ -151,6 +158,8 @@ impl App {
             Line::from(vec![
                 Span::styled("<d>", Style::default().bold()),
                 Span::from("one "),
+                Span::styled("<e>", Style::default().bold()),
+                Span::from("dit "),
                 Span::styled("<m>", Style::default().bold()),
                 Span::from("ore time "),
                 Span::styled("<r>", Style::default().bold()),
@@ -183,6 +192,15 @@ impl App {
                 }
                 KeyCode::Char('m') => {
                     self.doing.extend();
+                }
+                KeyCode::Char('e') => {
+                    if let Activity::Task { task, .. } = &self.doing {
+                        let mut command = Command::new(&self.tw.binary);
+                        command.arg(&task.uuid);
+                        command.arg("edit");
+
+                        self.interactive = Some(command)
+                    };
                 }
                 _ => {}
             }
@@ -253,6 +271,14 @@ impl App {
     pub fn should_quit(&self) -> bool {
         self.should_quit
     }
+
+    pub fn take_interactive(&mut self) -> Option<Command> {
+        self.interactive.take()
+    }
+
+    pub async fn refresh_doing(&mut self) -> Result<()> {
+        self.doing.refresh_task(&self.tw).await
+    }
 }
 
 #[derive(Debug)]
@@ -298,5 +324,21 @@ impl Activity {
             }
             Self::Nothing => {}
         }
+    }
+
+    pub async fn refresh_task(&mut self, tw: &Taskwarrior) -> Result<()> {
+        if let Self::Task { task, .. } = self {
+            *task = tw
+                .export()
+                .with_filter(&task.uuid)
+                .with_filter("limit:1")
+                .call()
+                .await
+                .context("could not refresh task")?
+                .pop()
+                .context("could not find task")?;
+        }
+
+        Ok(())
     }
 }
