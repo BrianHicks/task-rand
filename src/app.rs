@@ -7,7 +7,7 @@ use crossterm::event::{Event, KeyCode};
 use itertools::Itertools;
 use rand::prelude::*;
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Flex, Layout},
+    layout::{Alignment, Constraint, Flex, Layout},
     style::{palette::tailwind, Style, Stylize},
     text::{Line, Span, Text},
     widgets::{Gauge, Paragraph, Wrap},
@@ -94,6 +94,32 @@ impl App {
                     sections.push(Span::from(" "));
                     sections.push(Span::styled("pro:", Style::default().bold()));
                     sections.push(Span::from(project));
+                }
+
+                if let Some(due) = &task.due {
+                    let remaining = *due - Utc::now();
+
+                    let remaining_display = if remaining.num_seconds().abs() < 60 {
+                        format!("{}s", remaining.num_seconds())
+                    } else if remaining.num_minutes().abs() < 60 {
+                        format!("{}m", remaining.num_minutes())
+                    } else if remaining.num_hours().abs() < 24 {
+                        format!("{}h", remaining.num_hours())
+                    } else if remaining.num_days().abs() < 14 {
+                        format!("{}d", remaining.num_days())
+                    } else {
+                        format!("{}w", remaining.num_weeks())
+                    };
+
+                    let remaining_style = if remaining.num_seconds() < 0 {
+                        Style::default().fg(tailwind::RED.c800)
+                    } else {
+                        Style::default()
+                    };
+
+                    sections.push(Span::from(" "));
+                    sections.push(Span::styled("due:", Style::default().bold()));
+                    sections.push(Span::styled(remaining_display, remaining_style));
                 }
 
                 sections.push(Span::from(" "));
