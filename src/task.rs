@@ -28,7 +28,15 @@ pub struct Task {
 
     #[serde(default)]
     pub tags: HashSet<String>,
+
+    #[serde(default)]
+    pub annotations: Vec<Annotation>,
+
+    pub jira: Option<String>,
 }
+
+#[derive(Debug, serde::Deserialize, Clone)]
+pub struct Annotation {}
 
 impl Task {
     pub fn urgency_at(&self, when: DateTime<Utc>, config: &Config) -> f64 {

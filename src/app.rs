@@ -77,11 +77,19 @@ impl App {
                     / length.num_seconds() as f64)
                     .clamp(0.0, 1.0);
 
-                let mut sections = vec![
-                    Span::styled(format!("{}", task.id), Style::default().bold()),
-                    Span::from(": "),
-                    Span::from(&task.description),
-                ];
+                let mut sections = vec![Span::styled(
+                    format!("{}", task.id),
+                    Style::default().bold(),
+                )];
+
+                if let Some(jira) = &task.jira {
+                    sections.push(Span::from(" / "));
+                    sections.push(Span::styled(format!("{}", jira), Style::default().bold()));
+                }
+
+                sections.push(Span::styled(":", Style::default().bold()));
+                sections.push(Span::from(" "));
+                sections.push(Span::from(&task.description));
 
                 if !task.tags.is_empty() {
                     sections.push(Span::from(" "));
@@ -121,6 +129,10 @@ impl App {
                     sections.push(Span::from(" "));
                     sections.push(Span::styled("due:", Style::default().bold()));
                     sections.push(Span::styled(remaining_display, remaining_style));
+                }
+
+                if !task.annotations.is_empty() {
+                    sections.push(Span::styled(" [A]", Style::default().bold()));
                 }
 
                 sections.push(Span::from(" "));
