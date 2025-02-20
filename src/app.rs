@@ -77,31 +77,28 @@ impl App {
                     / length.num_seconds() as f64)
                     .clamp(0.0, 1.0);
 
-                let mut sections = vec![Span::styled(
-                    format!("{}", task.id),
-                    Style::default().bold(),
-                )];
+                let mut sections = vec![Span::from(format!("{}", task.id)).bold()];
 
                 if let Some(jira) = &task.jira {
                     sections.push(Span::from(" / "));
-                    sections.push(Span::styled(format!("{}", jira), Style::default().bold()));
+                    sections.push(Span::from(format!("{}", jira)).bold());
                 }
 
-                sections.push(Span::styled(":", Style::default().bold()));
+                sections.push(Span::from(":").bold());
                 sections.push(Span::from(" "));
                 sections.push(Span::from(&task.description));
 
                 if !task.tags.is_empty() {
                     sections.push(Span::from(" "));
-                    sections.push(Span::styled(
-                        task.tags.iter().map(|tag| format!("+{}", tag)).join(" "),
-                        Style::default().bold(),
-                    ));
+                    sections.push(
+                        Span::from(task.tags.iter().map(|tag| format!("+{}", tag)).join(" "))
+                            .bold(),
+                    );
                 }
 
                 if let Some(project) = &task.project {
                     sections.push(Span::from(" "));
-                    sections.push(Span::styled("pro:", Style::default().bold()));
+                    sections.push(Span::from("pro:").bold());
                     sections.push(Span::from(project));
                 }
 
@@ -127,24 +124,25 @@ impl App {
                     };
 
                     sections.push(Span::from(" "));
-                    sections.push(Span::styled("due:", Style::default().bold()));
+                    sections.push(Span::from("due:").bold());
                     sections.push(Span::styled(remaining_display, remaining_style));
                 }
 
                 if !task.annotations.is_empty() {
-                    sections.push(Span::styled(" [A]", Style::default().bold()));
+                    sections.push(Span::from(" [A]").bold());
                 }
 
                 sections.push(Span::from(" "));
-                sections.push(Span::styled(
-                    format!(
+                sections.push(
+                    Span::from(format!(
                         "until {}",
                         (*started + *length)
                             .with_timezone(&Local)
                             .format("%-I:%M %P")
-                    ),
-                    Style::default().italic().dim(),
-                ));
+                    ))
+                    .italic()
+                    .dim(),
+                );
 
                 (
                     Paragraph::new(Line::from(sections))
@@ -199,22 +197,22 @@ impl App {
 
         frame.render_widget(
             Line::from(vec![
-                Span::styled("d", Style::default().bold()),
+                Span::from("d").bold(),
                 Span::from("one "),
-                Span::styled("e", Style::default().bold()),
+                Span::from("e").bold(),
                 Span::from("dit "),
-                Span::styled("m", Style::default().bold()),
+                Span::from("m").bold(),
                 Span::from("ore time "),
-                Span::styled("r", Style::default().bold()),
+                Span::from("r").bold(),
                 Span::from("eroll "),
-                Span::styled("q", Style::default().bold()),
+                Span::from("q").bold(),
                 Span::from("uit "),
-                Span::styled("w", Style::default().bold()),
+                Span::from("w").bold(),
                 Span::from("ait 1h "),
                 // TODO: these could be sourced from config
-                Span::styled("o", Style::default().bold()),
+                Span::from("o").bold(),
                 Span::from("pen "),
-                Span::styled("b", Style::default().bold()),
+                Span::from("b").bold(),
                 Span::from("reakdown"),
             ])
             .centered()
