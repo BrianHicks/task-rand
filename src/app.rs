@@ -191,6 +191,8 @@ impl App {
                 Span::from("one "),
                 Span::from("e").bold(),
                 Span::from("dit "),
+                Span::from("f").bold(),
+                Span::from("ocus "),
                 Span::from("m").bold(),
                 Span::from("ore time "),
                 Span::from("r").bold(),
@@ -274,6 +276,26 @@ impl App {
 
                         self.interactive = Some(command)
                     };
+                }
+                KeyCode::Char('f') => {
+                    if let Activity::Task {
+                        task,
+                        started,
+                        length,
+                        ..
+                    } = &self.doing
+                    {
+                        let remaining_seconds = (*length - (Utc::now() - started)).num_seconds();
+
+                        if remaining_seconds > 0 {
+                            open::that(format!(
+                                "raycast://focus/start?goal={}&categories=messaging,social,news&duration={}",
+                                urlencoding::encode(&task.description),
+                                remaining_seconds,
+                            ))
+                            .context("could not start focus session")?;
+                        }
+                    }
                 }
                 _ => {}
             }
