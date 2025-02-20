@@ -55,8 +55,6 @@ impl App {
         let [app_box_area] = app_box_vert.areas(app_area);
         let [app_box_area] = app_box_horiz.areas(app_box_area);
 
-        let gauge_style = Style::new().fg(tailwind::BLUE.c800).bg(tailwind::BLUE.c400);
-
         let (title, gauge) = match &self.doing {
             Activity::Nothing => (
                 Paragraph::new(Text::from("Nothing to do right now")),
@@ -154,7 +152,7 @@ impl App {
                             time_remaining.num_minutes(),
                             time_remaining.num_seconds() % 60
                         ))
-                        .gauge_style(gauge_style)
+                        .gauge_style(gauge_style(time_remaining < Duration::zero()))
                         .ratio(percent_remaining)
                         .use_unicode(true),
                 )
@@ -182,7 +180,7 @@ impl App {
                             time_remaining.num_minutes(),
                             time_remaining.num_seconds() % 60
                         ))
-                        .gauge_style(gauge_style)
+                        .gauge_style(gauge_style(time_remaining < Duration::zero()))
                         .ratio(percent_remaining)
                         .use_unicode(true),
                 )
@@ -439,5 +437,13 @@ impl Activity {
         }
 
         Ok(())
+    }
+}
+
+fn gauge_style(overdue: bool) -> Style {
+    if overdue {
+        Style::new().fg(tailwind::RED.c800).bg(tailwind::RED.c400)
+    } else {
+        Style::new().fg(tailwind::BLUE.c800).bg(tailwind::BLUE.c400)
     }
 }
