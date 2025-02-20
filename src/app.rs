@@ -370,6 +370,10 @@ impl App {
     }
 }
 
+#[expect(
+    clippy::large_enum_variant,
+    reason = "only one is used at a time; it does not dominate memory usage"
+)]
 #[derive(Debug)]
 pub enum Activity {
     Nothing,
