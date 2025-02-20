@@ -147,11 +147,7 @@ impl App {
                         .centered()
                         .wrap(Wrap { trim: false }),
                     Gauge::default()
-                        .label(format!(
-                            "{}:{:02}",
-                            time_remaining.num_minutes(),
-                            time_remaining.num_seconds() % 60
-                        ))
+                        .label(format_remaining(time_remaining))
                         .gauge_style(gauge_style(time_remaining < Duration::zero()))
                         .ratio(percent_remaining)
                         .use_unicode(true),
@@ -175,11 +171,7 @@ impl App {
                     ))
                     .centered(),
                     Gauge::default()
-                        .label(format!(
-                            "{}:{:02}",
-                            time_remaining.num_minutes(),
-                            time_remaining.num_seconds() % 60
-                        ))
+                        .label(format_remaining(time_remaining))
                         .gauge_style(gauge_style(time_remaining < Duration::zero()))
                         .ratio(percent_remaining)
                         .use_unicode(true),
@@ -214,7 +206,7 @@ impl App {
                 Span::from("reakdown"),
             ])
             .centered()
-            .style(gauge_style.reversed()),
+            .style(gauge_style(false).reversed()),
             status_line_area,
         );
     }
@@ -446,4 +438,17 @@ fn gauge_style(overdue: bool) -> Style {
     } else {
         Style::new().fg(tailwind::BLUE.c800).bg(tailwind::BLUE.c400)
     }
+}
+
+fn format_remaining(remaining: Duration) -> String {
+    format!(
+        "{}{}:{:02}",
+        if remaining < Duration::zero() {
+            "-"
+        } else {
+            ""
+        },
+        remaining.abs().num_minutes(),
+        remaining.abs().num_seconds() % 60
+    )
 }
