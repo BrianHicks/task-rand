@@ -81,7 +81,7 @@ impl App {
 
                 if let Some(jira) = &task.jira {
                     sections.push(Span::from(" / "));
-                    sections.push(Span::from(format!("{}", jira)).bold());
+                    sections.push(Span::from(jira).bold());
                 }
 
                 sections.push(Span::from(":").bold());
