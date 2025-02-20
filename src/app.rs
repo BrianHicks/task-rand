@@ -109,7 +109,7 @@ impl App {
                     } else if remaining.num_days().abs() < 14 {
                         format!("{}d", remaining.num_days())
                     } else {
-                        format!("{}w", remaining.num_weeks())
+                        due.format("%Y-%m-%d").to_string()
                     };
 
                     let remaining_style = if remaining.num_seconds() < 0 {
