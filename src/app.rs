@@ -454,9 +454,11 @@ impl Activity {
     }
 }
 
-fn gauge_style(overdue: bool) -> Style {
-    if overdue {
-        Style::new().fg(tailwind::RED.c800).bg(tailwind::RED.c400)
+fn gauge_style(completed_time: bool) -> Style {
+    if completed_time {
+        Style::new()
+            .fg(tailwind::GREEN.c800)
+            .bg(tailwind::GREEN.c400)
     } else {
         Style::new().fg(tailwind::BLUE.c800).bg(tailwind::BLUE.c400)
     }
