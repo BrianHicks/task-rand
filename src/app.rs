@@ -71,9 +71,9 @@ impl App {
             } => {
                 let time_remaining = *length - (Utc::now() - started);
 
-                let percent_remaining = (time_remaining.num_seconds() as f64
-                    / length.num_seconds() as f64)
-                    .clamp(0.0, 1.0);
+                let percent_elapsed = 1.0
+                    - (time_remaining.num_seconds() as f64 / length.num_seconds() as f64)
+                        .clamp(0.0, 1.0);
 
                 let mut sections = vec![Span::from(format!("{}", task.id)).bold()];
 
@@ -149,7 +149,7 @@ impl App {
                     Gauge::default()
                         .label(format_remaining(time_remaining))
                         .gauge_style(gauge_style(time_remaining < Duration::zero()))
-                        .ratio(percent_remaining)
+                        .ratio(percent_elapsed)
                         .use_unicode(true),
                 )
             }
