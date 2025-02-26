@@ -264,8 +264,7 @@ impl App {
                     if let Activity::Task { task, .. } = &self.doing {
                         let mut command = Command::new("tw-open");
                         command.arg(&task.uuid);
-
-                        self.interactive = Some(command)
+                        command.status().await.context("could not call tw-open")?;
                     };
                 }
                 KeyCode::Char('b') => {
