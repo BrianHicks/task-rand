@@ -220,7 +220,7 @@ impl App {
                     self.should_quit = true;
                 }
                 KeyCode::Char('d') => {
-                    self.interactive = self.doing.mark_done_command(&self.tw);
+                    self.doing.mark_done(&self.tw).await?;
 
                     // TODO: possible race condition here. It's possible to
                     // choose the same task again. Should interactive maybe
@@ -411,12 +411,14 @@ impl Activity {
         matches!(self, Self::Break { .. })
     }
 
-    pub fn mark_done_command(&self, tw: &Taskwarrior) -> Option<Command> {
+    pub async fn mark_done(&self, tw: &Taskwarrior) -> Result<()> {
         if let Self::Task { task, .. } = self {
-            Some(tw.mark_done_command(&task.uuid))
-        } else {
-            None
+            tw.mark_done(&task.uuid)
+                .await
+                .with_context(|| format!("could not mark task {} as done", task.id))?;
         }
+
+        Ok(())
     }
 
     pub fn extend(&mut self) {

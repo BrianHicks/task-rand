@@ -54,10 +54,17 @@ impl Taskwarrior {
 
         tracing::trace!(?command, "marking task as done");
 
-        command
-            .status()
+        let out = command
+            .output()
             .await
             .context("could not mark task as done")?;
+
+        if !out.status.success() {
+            return Err(anyhow::anyhow!(
+                "could not mark task as done. Exit code {:?}",
+                out.status
+            ));
+        }
 
         Ok(())
     }
