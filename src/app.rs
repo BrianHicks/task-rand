@@ -270,7 +270,11 @@ impl App {
                 KeyCode::Char('b') => {
                     if let Activity::Task { task, .. } = &self.doing {
                         let mut command = Command::new("tw-breakdown");
-                        command.arg("--seq");
+
+                        if !key_event.modifiers.contains(KeyModifiers::SHIFT) {
+                            command.arg("--seq");
+                        };
+
                         command.arg(&task.uuid);
 
                         self.interactive = Some(command)
