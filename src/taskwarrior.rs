@@ -61,8 +61,10 @@ impl Taskwarrior {
 
         if !out.status.success() {
             return Err(anyhow::anyhow!(
-                "could not mark task as done. Exit code {:?}",
-                out.status
+                "could not mark task as done. Exit code {:?}\n\nStdout:\n{}\n\nStderr:\n{}",
+                out.status,
+                String::from_utf8_lossy(&out.stdout),
+                String::from_utf8_lossy(&out.stderr)
             ));
         }
 
@@ -157,8 +159,10 @@ impl ModifyBuilder {
 
         if !out.status.success() {
             return Err(anyhow::anyhow!(
-                "could not modify task. Exit code {:?}",
-                out.status
+                "could not modify task. Exit code {:?}\n\nStdout:\n{}\n\nStderr:\n{}",
+                out.status,
+                String::from_utf8_lossy(&out.stdout),
+                String::from_utf8_lossy(&out.stderr)
             ));
         }
 
