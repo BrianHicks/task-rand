@@ -3,7 +3,7 @@ use crate::task::Task;
 use crate::taskwarrior::Taskwarrior;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Duration, Local, Utc};
-use crossterm::event::{Event, KeyCode};
+use crossterm::event::{Event, KeyCode, KeyModifiers};
 use itertools::Itertools;
 use rand::prelude::*;
 use ratatui::{
@@ -241,10 +241,16 @@ impl App {
                 }
                 KeyCode::Char('w') => {
                     if let Activity::Task { task, .. } = &self.doing {
+                        let mod_ = if key_event.modifiers.contains(KeyModifiers::SHIFT) {
+                            "wait:1d"
+                        } else {
+                            "wait:1h"
+                        };
+
                         self.tw
                             .modify()
                             .with_subject(&task.uuid)
-                            .with_mod("wait:1h")
+                            .with_mod(mod_)
                             .call()
                             .await
                             .with_context(|| format!("could not modify task {}", task.id))?;
