@@ -242,7 +242,7 @@ impl App {
                 KeyCode::Char('w') => {
                     if let Activity::Task { task, .. } = &self.doing {
                         let mod_ = if key_event.modifiers.contains(KeyModifiers::SHIFT) {
-                            "wait:1d"
+                            "wait:tomorrow"
                         } else {
                             "wait:1h"
                         };
