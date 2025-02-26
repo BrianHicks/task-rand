@@ -222,9 +222,6 @@ impl App {
                 KeyCode::Char('d') => {
                     self.doing.mark_done(&self.tw).await?;
 
-                    // TODO: possible race condition here. It's possible to
-                    // choose the same task again. Should interactive maybe
-                    // take some kind of callback so that this can't happen?
                     self.doing = self.choose_next_task().await?;
                 }
                 KeyCode::Char('r') => {
