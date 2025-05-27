@@ -321,8 +321,6 @@ impl App {
     async fn available_tasks(&self) -> Result<Vec<Task>> {
         self.tw
             .export()
-            .with_urgency_coefficient("due", 0.0)
-            .with_urgency_coefficient("age", 0.0)
             .with_urgency_coefficient("blocked", 0.0)
             .with_urgency_coefficient("blocking", 0.0)
             .with_filter("jirastatus.not:backlog")

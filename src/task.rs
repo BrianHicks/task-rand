@@ -41,8 +41,6 @@ pub struct Annotation {}
 impl Task {
     pub fn urgency_at(&self, when: DateTime<Utc>, config: &Config) -> f64 {
         self.urgency
-            + self.base_due_urgency_at(when) * config.urgency_due_coefficient
-            + self.base_age_urgency_at(when, config) * config.urgency_age_coefficient
     }
 
     fn base_due_urgency_at(&self, when: DateTime<Utc>) -> f64 {
