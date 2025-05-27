@@ -153,30 +153,6 @@ impl App {
                         .use_unicode(true),
                 )
             }
-            Activity::Break {
-                started, length, ..
-            } => {
-                let time_remaining = *length - (Utc::now() - started);
-
-                let percent_remaining = (time_remaining.num_seconds() as f64
-                    / length.num_seconds() as f64)
-                    .clamp(0.0, 1.0);
-
-                (
-                    Paragraph::new(format!(
-                        "Taking a break until {}",
-                        (*started + *length)
-                            .with_timezone(&Local)
-                            .format("%-I:%M %p")
-                    ))
-                    .centered(),
-                    Gauge::default()
-                        .label(format_remaining(time_remaining))
-                        .gauge_style(gauge_style(time_remaining < Duration::zero()))
-                        .ratio(percent_remaining)
-                        .use_unicode(true),
-                )
-            }
         };
 
         let [title_area, gauge_area] =
@@ -333,41 +309,25 @@ impl App {
     async fn choose_next_task(&self) -> Result<Activity> {
         let now = Utc::now();
 
-        // This is inspired by the Gladden Design Paper Apps TO•DO, where you
-        // roll a d6 to decide how long you're going to work. You take a break
-        // if you roll a 6, and work for `roll*10` minutes otherwise. We use `0`
-        // as our sentinel value instead.
-        let minutes = rand::random_range(0..=5);
+        let target_duration = Duration::minutes(25);
 
-        if minutes == 0 && !self.doing.is_break() {
-            let length = Duration::minutes(10);
+        let tasks = self.available_tasks().await?;
 
-            Ok(Activity::Break {
-                started: now,
-                length,
-                original_length: length,
-            })
-        } else {
-            let target_duration = Duration::minutes(minutes.max(1) * 10);
+        let task = tasks
+            .choose_weighted(&mut rand::rng(), |task| task.urgency_at(now, &self.config))
+            .context("could not choose a task")?;
 
-            let tasks = self.available_tasks().await?;
+        let length = task
+            .estimate
+            .unwrap_or(target_duration)
+            .min(target_duration);
 
-            let task = tasks
-                .choose_weighted(&mut rand::rng(), |task| task.urgency_at(now, &self.config))
-                .context("could not choose a task")?;
-
-            let length = task
-                .estimate
-                .unwrap_or(target_duration)
-                .min(target_duration);
-
-            Ok(Activity::Task {
-                task: task.clone(),
-                started: now,
-                length,
-                original_length: length,
-            })
-        }
+        Ok(Activity::Task {
+            task: task.clone(),
+            started: now,
+            length,
+            original_length: length,
+        })
     }
 
     pub fn should_quit(&self) -> bool {
@@ -396,20 +356,11 @@ pub enum Activity {
         length: Duration,
         original_length: Duration,
     },
-    Break {
-        started: DateTime<Utc>,
-        length: Duration,
-        original_length: Duration,
-    },
 }
 
 impl Activity {
     pub fn is_nothing(&self) -> bool {
         matches!(self, Self::Nothing)
-    }
-
-    pub fn is_break(&self) -> bool {
-        matches!(self, Self::Break { .. })
     }
 
     pub async fn mark_done(&self, tw: &Taskwarrior) -> Result<()> {
@@ -425,11 +376,6 @@ impl Activity {
     pub fn extend(&mut self) {
         match self {
             Self::Task {
-                length,
-                original_length,
-                ..
-            }
-            | Self::Break {
                 length,
                 original_length,
                 ..
