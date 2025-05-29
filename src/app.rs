@@ -314,7 +314,9 @@ impl App {
         let tasks = self.available_tasks().await?;
 
         let task = tasks
-            .choose_weighted(&mut rand::rng(), |task| task.urgency_at(now, &self.config))
+            .choose_weighted(&mut rand::rng(), |task| {
+                task.urgency_at(now, &self.config).max(0.0)
+            })
             .context("could not choose a task")?;
 
         let length = task
